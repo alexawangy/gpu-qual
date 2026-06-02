@@ -1,109 +1,67 @@
 # gpu-qual
 
-GPU qualification utilities.
+**Status: Under progress**
 
-## Requirements
+`gpu-qual` is a lightweight C++20 GPU instance contract tester for the allocation
+pipeline. It is intended to run on a freshly provisioned GPU instance before the
+instance is assigned to a client account.
 
-- CMake 3.20 or newer
-- Ninja
-- A C++20 compiler
+It checks whether the instance matches the expected lease contract: GPU count,
+SKU/family, memory floor, MIG mode, topology policy, driver/NVML availability,
+and optional CUDA usability. It is not a hardware diagnostics or stress tool;
+deep health checks remain DCGM's job.
 
-On macOS with Homebrew:
+## What We Have Now
+
+- C++20 project skeleton.
+- CMake + Ninja presets for dev, strict, release, and relwithdebinfo builds.
+- Convenience `Makefile`.
+- Placeholder `gpu-qual` binary in `src/main.cpp`.
+- Basic Catch2 test target stub.
+
+The NVML backend, CUDA smoke test, contract JSON parsing, verdict engine, and
+DCGM escalation are planned but not implemented yet.
+
+## Setup
+
+Install build tools.
+
+macOS:
 
 ```sh
 brew install cmake ninja
 ```
 
-On Ubuntu:
+Ubuntu:
 
 ```sh
 sudo apt update
 sudo apt install -y build-essential cmake ninja-build
 ```
 
-## Local Build Flow
-
-The repo includes a convenience `Makefile` that wraps the CMake preset commands.
-For normal development, run:
+Build and test:
 
 ```sh
 make dev
 ```
 
-That configures the `dev` preset, builds, runs CTest, and links
-`compile_commands.json` into the repo root for editors.
-
-List the available presets:
+Run:
 
 ```sh
-make list
+make run
 ```
 
-Configure a debug development build:
+Install to `./dist`:
 
 ```sh
-cmake --preset dev
+make install PRESET=relwithdebinfo
 ```
 
-Build it:
+## Useful Commands
 
 ```sh
-cmake --build --preset dev
+make list      # list CMake presets
+make strict    # warnings-as-errors dev build
+make release   # release build + tests
+make clean     # remove generated build outputs
 ```
-
-Run it:
-
-```sh
-./build/dev/gpu-qual
-```
-
-Run tests:
-
-```sh
-ctest --preset dev
-```
-
-You can still call CMake directly at any time; the Makefile is only a shortcut.
-
-## Presets
-
-- `dev`: debug build for normal development.
-- `strict`: debug build with warnings treated as errors.
-- `relwithdebinfo`: optimized build with debug symbols, useful for Linux binaries you may need to diagnose later.
-- `release`: optimized release build.
-
-Example release-style build:
-
-```sh
-cmake --preset relwithdebinfo
-cmake --build --preset relwithdebinfo
-ctest --preset relwithdebinfo
-```
-
-Install into a local staging directory:
-
-```sh
-cmake --install build/relwithdebinfo --prefix "$PWD/dist"
-```
-
-The installed executable will be:
-
-```sh
-./dist/bin/gpu-qual
-```
-
-## Linux Binaries
-
-macOS builds produce macOS binaries. For Ubuntu GPU machines, build on Ubuntu:
-
-```sh
-cmake --preset relwithdebinfo
-cmake --build --preset relwithdebinfo
-ctest --preset relwithdebinfo
-```
-
-When GPU-specific dependencies are added later, prefer building final release
-artifacts on the target Linux distribution or in an Ubuntu container/CI image
-that matches the deployment environment. Cross-compiling can be added later with
-a toolchain file and `CMakeUserPresets.json`, while keeping project-wide presets
-portable.
