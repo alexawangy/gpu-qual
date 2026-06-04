@@ -15,6 +15,10 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 include(GNUInstallDirs)
+include(FetchContent)
+
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_MakeAvailable(json)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -29,6 +33,8 @@ set_target_properties(gpuqual PROPERTIES OUTPUT_NAME gpu-qual)
 target_sources(gpuqual PRIVATE src/main.cpp)
 
 target_compile_features(gpuqual PRIVATE cxx_std_20)
+
+target_link_libraries(gpuqual PRIVATE nlohmann_json::nlohmann_json)
 
 target_include_directories(
   gpuqual

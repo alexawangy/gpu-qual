@@ -29,10 +29,14 @@ target_compile_features(gpuqual_tests PRIVATE cxx_std_20)
 target_link_libraries(gpuqual_tests
   PRIVATE
     Catch2::Catch2WithMain
+    nlohmann_json::nlohmann_json
 )
 
-if(TARGET gpuqual_core)
-  target_link_libraries(gpuqual_tests PRIVATE gpuqual_core)
+if(TARGET gpuqual)
+  target_include_directories(gpuqual_tests
+    PRIVATE
+      "$<TARGET_PROPERTY:gpuqual,INCLUDE_DIRECTORIES>"
+  )
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${catch2_SOURCE_DIR}/extras")
