@@ -22,6 +22,7 @@ add_executable(gpuqual_tests)
 target_sources(gpuqual_tests
   PRIVATE
     ${GPUQUAL_TEST_SOURCES}
+    "${PROJECT_SOURCE_DIR}/src/verdict.cpp"
 )
 
 target_compile_features(gpuqual_tests PRIVATE cxx_std_20)

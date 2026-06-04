@@ -7,11 +7,28 @@
 #include "version.hpp"
 
 namespace gpu_qual {
-  enum class Verdict { PASS, PASS_WITH_WARNINGS, FAIL, QUARANTINE };
-  enum class ExitCode : int { PASS=0, PASS_WITH_WARNINGS=10, FAIL=20, QUARANTINE_CONTRACT=30, QUARANTINE_USABILITY=40, STACK_ABSENT=50 };
+  enum class Verdict { ASSIGN, ASSIGN_WITH_WARNINGS, RETRY, QUARANTINE };
+  enum class ExitCode : int { ASSIGN=0, ASSIGN_WITH_WARNINGS=10, RETRY=20, QUARANTINE_CONTRACT=30, QUARANTINE_USABILITY=40, STACK_ABSENT=50 };
 
   // Add as we go
-  enum class ReasonCode {};
+  enum class ReasonCode {
+    GPU_COUNT_MISMATCH,
+    GPU_FAMILY_MISMATCH,
+    MEMORY_BELOW_FLOOR,
+    MIG_MODE_MISMATCH,
+
+    CUDA_CONTEXT_FAILED,
+    COMPUTE_SMOKE_FAILED,
+
+    DRIVER_ABSENT,
+    NVML_INIT_FAILED,
+
+    DRIVER_LOADING,
+    NVML_TIMEOUT,
+
+    P2P_DEGRADED,
+    DRIVER_BRANCH_BELOW_MIN,
+  };
 
   std::string_view to_string(Verdict);
   std::string_view to_string(ReasonCode);
@@ -19,8 +36,10 @@ namespace gpu_qual {
   struct Result {
     std::string tool_version = kToolVersion;
     std::string schema_version = kSchemaVersion;
-    Verdict verdit = Verdict::QUARANTINE;
-    ExitCode exit_code = ExitCode::STACK_ABSENT;
+    Verdict verdict;
+    ExitCode exit_code;
     std::vector<ReasonCode> reasons;
   };
+
+  Result compute_result(std::vector<ReasonCode>);
 }
