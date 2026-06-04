@@ -7,39 +7,54 @@
 #include "version.hpp"
 
 namespace gpu_qual {
-  enum class Verdict { ASSIGN, ASSIGN_WITH_WARNINGS, RETRY, QUARANTINE };
-  enum class ExitCode : int { ASSIGN=0, ASSIGN_WITH_WARNINGS=10, RETRY=20, QUARANTINE_CONTRACT=30, QUARANTINE_USABILITY=40, STACK_ABSENT=50 };
+  enum class Mode { INVENTORY, CHECK };
+  enum class Verdict { OBSERVED, PASS, WARN, RETRY, FAIL };
+  enum class ExitCode : int { OK = 0, WARN = 10, RETRY = 20, FAIL_CONTRACT = 30, FAIL_USABILITY = 40, FAIL_STACK = 50 };
+  enum class ReasonClass { REPORT, WARN, HARD, RETRY };
 
-  // Add as we go
   enum class ReasonCode {
     GPU_COUNT_MISMATCH,
-    GPU_FAMILY_MISMATCH,
-    MEMORY_BELOW_FLOOR,
+    GPU_NAME_MISMATCH,
+    GPU_MEMORY_BELOW_MIN,
     MIG_MODE_MISMATCH,
 
-    CUDA_CONTEXT_FAILED,
-    COMPUTE_SMOKE_FAILED,
+    CUDA_VISIBLE_COUNT_BELOW_MIN,
 
-    DRIVER_ABSENT,
+    NVML_LIBRARY_NOT_FOUND,
     NVML_INIT_FAILED,
+    NVML_NO_PERMISSION,
+    NO_NVIDIA_DEVICES,
 
-    DRIVER_LOADING,
-    NVML_TIMEOUT,
+    CUDA_LIBRARY_NOT_FOUND,
+    CUDA_INIT_FAILED,
+    CUDA_CONTEXT_FAILED,
+    CUDA_SMOKE_FAILED,
 
-    P2P_DEGRADED,
-    DRIVER_BRANCH_BELOW_MIN,
+    EXPECTED_SPEC_INVALID,
+
+    PROBE_TIMEOUT,
+    PROBE_CHILD_CRASHED,
+    PROBE_OUTPUT_INVALID,
+
+    FIELD_UNSUPPORTED,
+    UNKNOWN_FIELD_IGNORED,
   };
 
+  std::string_view to_string(Mode);
   std::string_view to_string(Verdict);
+  std::string_view to_string(ReasonClass);
   std::string_view to_string(ReasonCode);
+  ReasonClass default_class(ReasonCode);
+  ExitCode default_exit_code(ReasonCode);
 
   struct Result {
     std::string tool_version = kToolVersion;
     std::string schema_version = kSchemaVersion;
+    Mode mode;
     Verdict verdict;
     ExitCode exit_code;
     std::vector<ReasonCode> reasons;
   };
 
-  Result compute_result(std::vector<ReasonCode>);
+  Result compute_result(Mode, std::vector<ReasonCode>);
 }

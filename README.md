@@ -2,14 +2,30 @@
 
 **Status: Under progress**
 
-`gpu-qual` is a lightweight C++20 GPU instance contract tester for the allocation
-pipeline. It is intended to run on a freshly provisioned GPU instance before the
-instance is assigned to a client account.
+`gpu-qual` is a lightweight, provider-agnostic GPU node inventory and
+qualification probe. It runs locally on an NVIDIA GPU node and emits stable JSON
+describing whether the GPU stack is present, visible, and minimally usable.
 
-It checks whether the instance matches the expected lease contract: GPU count,
-SKU/family, memory floor, MIG mode, topology policy, driver/NVML availability,
-and optional CUDA usability. It is not a hardware diagnostics or stress tool;
-deep health checks remain DCGM's job.
+The default mode is inventory-only. Optional validation mode compares the
+observed GPU stack with a small caller-supplied expected spec. Cloud providers,
+instance shapes, reservations, regions, and provider SDKs stay outside this
+binary.
+
+## Contract
+
+The public MVP contract is schema version `0.3` and tool version
+`gpu-qual/0.3.0`.
+
+- Inventory success returns verdict `observed` and exit code `0`.
+- Validation success returns verdict `pass` and exit code `0`.
+- Validation warnings return verdict `warn` and exit code `10`.
+- Transient probe failures return verdict `retry` and exit code `20`.
+- Contract mismatches return verdict `fail` and exit code `30`.
+- Required CUDA smoke failures return verdict `fail` and exit code `40`.
+- Missing, inaccessible, invalid, or crashed probe infrastructure returns verdict
+  `fail` and exit code `50`.
+
+See [docs/contract-v0.3.md](docs/contract-v0.3.md) for the frozen MVP contract.
 
 ## What We Have Now
 
@@ -17,10 +33,11 @@ deep health checks remain DCGM's job.
 - CMake + Ninja presets for dev, strict, release, and relwithdebinfo builds.
 - Convenience `Makefile`.
 - Placeholder `gpu-qual` binary in `src/main.cpp`.
-- Basic Catch2 test target stub.
+- v0.3 version, verdict, exit-code, reason-code, and result-routing tests.
 
-The NVML backend, CUDA smoke test, contract JSON parsing, verdict engine, and
-DCGM escalation are planned but not implemented yet.
+The expected-spec parser, reconciler, JSON output, fake backend, supervisor,
+NVML inventory backend, and optional CUDA smoke path are planned but not
+implemented yet.
 
 ## Setup
 

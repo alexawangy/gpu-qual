@@ -7,6 +7,11 @@ out/
 # Cached things
 .cache/
 
+# Personal planning/tracking
+PLAN.md
+tickets/
+docs/
+
 # Compiled object files and binaries
 *.o
 *.obj
