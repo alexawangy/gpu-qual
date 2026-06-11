@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20...4.3)
 
 project(
   gpuqual
-  VERSION 0.3.0
+  VERSION 0.1.0
   DESCRIPTION "GPU qualification utilities"
   LANGUAGES CXX
 )
@@ -30,7 +30,10 @@ add_executable(gpuqual)
 
 set_target_properties(gpuqual PROPERTIES OUTPUT_NAME gpu-qual)
 
-target_sources(gpuqual PRIVATE src/main.cpp)
+target_sources(gpuqual PRIVATE
+  src/main.cpp
+  src/verdict.cpp
+)
 
 target_compile_features(gpuqual PRIVATE cxx_std_20)
 

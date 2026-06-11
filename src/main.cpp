@@ -1,9 +1,10 @@
 #include <iostream>
 #include <ostream>
 #include <nlohmann/json.hpp>
-using json = nlohmann::json;
+#include <string_view>
 
 int main() {
-  std::cout << "Hello there\n" << std::endl;
+  std::string_view msg{"alexander", 4};
+  std::cout << msg << std::endl;
   return 0;
 }

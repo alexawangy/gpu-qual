@@ -47,14 +47,22 @@ namespace gpu_qual {
   ReasonClass default_class(ReasonCode);
   ExitCode default_exit_code(ReasonCode);
 
+  struct Reason {
+    ReasonCode code;
+    ReasonClass cls;
+    std::string field;
+    std::string expected_val;
+    std::string observed_val;
+  };
+
   struct Result {
     std::string tool_version = kToolVersion;
     std::string schema_version = kSchemaVersion;
     Mode mode;
     Verdict verdict;
     ExitCode exit_code;
-    std::vector<ReasonCode> reasons;
+    std::vector<Reason> reasons;
   };
 
-  Result compute_result(Mode, std::vector<ReasonCode>);
+  Result compute_result(Mode, std::vector<Reason>);
 }

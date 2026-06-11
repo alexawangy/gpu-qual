@@ -191,10 +191,10 @@ namespace gpu_qual {
     return ExitCode::FAIL_STACK;
   }
 
-  Result compute_result(Mode mode, std::vector<ReasonCode> reasons) {
+  Result compute_result(Mode mode, std::vector<Reason> reasons) {
     auto exit_code = ExitCode::OK;
-    for (const auto reason : reasons) {
-      const auto candidate = default_exit_code(reason);
+    for (const auto &reason : reasons) {
+      const auto candidate = default_exit_code(reason.code);
       if (priority(candidate) > priority(exit_code)) {
         exit_code = candidate;
       }

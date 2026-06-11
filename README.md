@@ -13,9 +13,6 @@ binary.
 
 ## Contract
 
-The public MVP contract is schema version `0.3` and tool version
-`gpu-qual/0.3.0`.
-
 - Inventory success returns verdict `observed` and exit code `0`.
 - Validation success returns verdict `pass` and exit code `0`.
 - Validation warnings return verdict `warn` and exit code `10`.
@@ -25,7 +22,7 @@ The public MVP contract is schema version `0.3` and tool version
 - Missing, inaccessible, invalid, or crashed probe infrastructure returns verdict
   `fail` and exit code `50`.
 
-See [docs/contract-v0.3.md](docs/contract-v0.3.md) for the frozen MVP contract.
+See [docs/contract.md](docs/contract.md) for the frozen MVP contract.
 
 ## What We Have Now
 
@@ -33,7 +30,7 @@ See [docs/contract-v0.3.md](docs/contract-v0.3.md) for the frozen MVP contract.
 - CMake + Ninja presets for dev, strict, release, and relwithdebinfo builds.
 - Convenience `Makefile`.
 - Placeholder `gpu-qual` binary in `src/main.cpp`.
-- v0.3 version, verdict, exit-code, reason-code, and result-routing tests.
+- Version, verdict, exit-code, reason-code, and result-routing tests.
 
 The expected-spec parser, reconciler, JSON output, fake backend, supervisor,
 NVML inventory backend, and optional CUDA smoke path are planned but not
