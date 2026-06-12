@@ -5,13 +5,20 @@
 
 using json = nlohmann::json;
 
+namespace {
+  template <typename T>
+  json optional_or_null(const std::optional<T> &value) {
+    if (value.has_value()) return *value;
+    return nullptr;
+  }
+}
+
 json gpu_qual::to_json(const NvmlState &nvml) {
   json jres = {
     {"init_ok", nvml.init_ok},
     {"available", nvml.available},
+    {"driver_version", optional_or_null(nvml.driver_version)},
   };
-
-  if (nvml.driver_version.has_value()) jres["driver_version"] = *nvml.driver_version;
 
   return jres;
 }
@@ -19,11 +26,10 @@ json gpu_qual::to_json(const NvmlState &nvml) {
 json gpu_qual::to_json(const CudaState &cuda) {
   json jres = {
     {"smoke_ran", cuda.smoke_ran},
+    {"available", optional_or_null(cuda.available)},
+    {"visible_device_count", optional_or_null(cuda.device_count)},
+    {"smoke_passed", optional_or_null(cuda.smoke_passed)},
   };
-
-  if (cuda.available.has_value()) jres["available"] = *cuda.available;
-  if (cuda.device_count.has_value()) jres["device_count"] = *cuda.device_count;
-  if (cuda.smoke_passed.has_value()) jres["smoke_passed"] = *cuda.smoke_passed;
 
   return jres;
 }
@@ -57,8 +63,10 @@ json gpu_qual::to_json(const Result &res) {
      {"schema_version", res.schema_version},
      {"mode", gpu_qual::to_string(res.mode)},
      {"exit_code", static_cast<int>(res.exit_code)},
-     {"verdict", gpu_qual::to_string(res.verdict)}
+     {"verdict", gpu_qual::to_string(res.verdict)},
    };
+
+   if (res.observed.has_value()) jres["observed"] = to_json(*res.observed);
 
    jres["reasons"] = json::array();
 

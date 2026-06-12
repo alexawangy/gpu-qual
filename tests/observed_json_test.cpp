@@ -57,7 +57,7 @@ TEST_CASE("to_json serializes a populated observed state with the fixed contract
         }}},
         {"fallback", {
             {"nvidia_device_nodes_present", true},
-            {"proc_driver_nvidia_present", true},
+            {"nvidia_proc_driver_present", true},
             {"nvidia_pci_devices_present", true},
         }},
     };
@@ -84,7 +84,7 @@ TEST_CASE("to_json serializes default observed state without omitting nullable f
         {"gpus", nlohmann::json::array()},
         {"fallback", {
             {"nvidia_device_nodes_present", false},
-            {"proc_driver_nvidia_present", false},
+            {"nvidia_proc_driver_present", false},
             {"nvidia_pci_devices_present", false},
         }},
     };
