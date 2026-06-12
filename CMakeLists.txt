@@ -26,42 +26,43 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(GPUQUAL_ENABLE_WARNINGS "Enable compiler warnings for gpuqual targets" ON)
 option(GPUQUAL_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
-add_executable(gpuqual)
-
-set_target_properties(gpuqual PROPERTIES OUTPUT_NAME gpu-qual)
-
-target_sources(gpuqual PRIVATE
-  src/main.cpp
+add_library(gpuqual STATIC
   src/verdict.cpp
   src/io_json.cpp
 )
 
-target_compile_features(gpuqual PRIVATE cxx_std_20)
+target_compile_features(gpuqual PUBLIC cxx_std_20)
 
-target_link_libraries(gpuqual PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(gpuqual PUBLIC nlohmann_json::nlohmann_json)
 
 target_include_directories(
   gpuqual
-  PRIVATE
+  PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
+add_executable(gpu-qual src/main.cpp)
+
+target_link_libraries(gpu-qual PRIVATE gpuqual)
+
 if(GPUQUAL_ENABLE_WARNINGS)
-  if(MSVC)
-    target_compile_options(gpuqual PRIVATE /W4)
-    if(GPUQUAL_WARNINGS_AS_ERRORS)
-      target_compile_options(gpuqual PRIVATE /WX)
+  foreach(target gpuqual gpu-qual)
+    if(MSVC)
+      target_compile_options(${target} PRIVATE /W4)
+      if(GPUQUAL_WARNINGS_AS_ERRORS)
+        target_compile_options(${target} PRIVATE /WX)
+      endif()
+    else()
+      target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+      if(GPUQUAL_WARNINGS_AS_ERRORS)
+        target_compile_options(${target} PRIVATE -Werror)
+      endif()
     endif()
-  else()
-    target_compile_options(gpuqual PRIVATE -Wall -Wextra -Wpedantic)
-    if(GPUQUAL_WARNINGS_AS_ERRORS)
-      target_compile_options(gpuqual PRIVATE -Werror)
-    endif()
-  endif()
+  endforeach()
 endif()
 
 install(
-  TARGETS gpuqual
+  TARGETS gpu-qual
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 

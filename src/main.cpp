@@ -1,10 +1,8 @@
 #include <iostream>
-#include <ostream>
-#include <nlohmann/json.hpp>
-#include <string_view>
+
+#include <gpu_qual/io_json.hpp>
 
 int main() {
-  std::string_view msg{"alexander", 4};
-  std::cout << msg << std::endl;
+  std::cout << gpu_qual::to_json(gpu_qual::compute_result(gpu_qual::Mode::INVENTORY, {})).dump(2) << std::endl;
   return 0;
 }

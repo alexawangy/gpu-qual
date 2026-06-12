@@ -68,5 +68,8 @@ namespace gpu_qual {
 
   Result compute_result(Mode, std::vector<Reason>);
 
-  Reason make_reason(ReasonCode, std::string, nlohmann::json, nlohmann::json);
+  Reason make_reason(ReasonCode code,
+                     std::string field = {},
+                     nlohmann::json expected = {},
+                     nlohmann::json observed = {});
 }
