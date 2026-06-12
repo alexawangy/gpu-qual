@@ -1,9 +1,11 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "gpu_qual/observed.hpp"
 #include "version.hpp"
 
 #include <nlohmann/json.hpp>
@@ -64,6 +66,7 @@ namespace gpu_qual {
     Verdict verdict;
     ExitCode exit_code;
     std::vector<Reason> reasons;
+    std::optional<ObservedState> observed;
   };
 
   Result compute_result(Mode, std::vector<Reason>);
