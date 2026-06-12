@@ -14,8 +14,7 @@ It has two modes:
   spec ([schemas/contract_schema.json](schemas/contract_schema.json)), including health gates.
 
 The binary knows nothing about cloud providers, instance shapes, regions, or
-reservations — callers own all of that. See [PLAN.md](PLAN.md) for the full
-design and [docs/contract.md](docs/contract.md) for the frozen MVP contract.
+reservations — callers own all of that.
 
 ## Exit codes
 
