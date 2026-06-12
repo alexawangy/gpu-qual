@@ -6,6 +6,8 @@
 
 #include "version.hpp"
 
+#include <nlohmann/json.hpp>
+
 namespace gpu_qual {
   enum class Mode { INVENTORY, CHECK };
   enum class Verdict { OBSERVED, PASS, WARN, RETRY, FAIL };
@@ -51,8 +53,8 @@ namespace gpu_qual {
     ReasonCode code;
     ReasonClass cls;
     std::string field;
-    std::string expected_val;
-    std::string observed_val;
+    nlohmann::json expected;
+    nlohmann::json observed;
   };
 
   struct Result {
@@ -65,4 +67,6 @@ namespace gpu_qual {
   };
 
   Result compute_result(Mode, std::vector<Reason>);
+
+  Reason make_reason(ReasonCode, std::string, nlohmann::json, nlohmann::json);
 }

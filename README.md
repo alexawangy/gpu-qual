@@ -1,81 +1,55 @@
 # gpu-qual
 
-**Status: Under progress**
+**Status: early development — core types and tests only; the probe itself is not implemented yet.**
 
-`gpu-qual` is a lightweight, provider-agnostic GPU node inventory and
-qualification probe. It runs locally on an NVIDIA GPU node and emits stable JSON
-describing whether the GPU stack is present, visible, and minimally usable.
+`gpu-qual` is a small, provider-agnostic GPU node qualification probe. It runs
+locally on an NVIDIA GPU node, answers one question — *is the GPU stack
+present, the GPUs I expected, and healthy enough to hand off?* — then emits
+stable JSON and a stable exit code, and exits.
 
-The default mode is inventory-only. Optional validation mode compares the
-observed GPU stack with a small caller-supplied expected spec. Cloud providers,
-instance shapes, reservations, regions, and provider SDKs stay outside this
-binary.
+It has two modes:
 
-## Contract
+- **Inventory** (default) — observe and report the local GPU stack. No input needed.
+- **Check** — compare the observed stack against a caller-supplied expected
+  spec ([schemas/contract_schema.json](schemas/contract_schema.json)), including health gates.
 
-- Inventory success returns verdict `observed` and exit code `0`.
-- Validation success returns verdict `pass` and exit code `0`.
-- Validation warnings return verdict `warn` and exit code `10`.
-- Transient probe failures return verdict `retry` and exit code `20`.
-- Contract mismatches return verdict `fail` and exit code `30`.
-- Required CUDA smoke failures return verdict `fail` and exit code `40`.
-- Missing, inaccessible, invalid, or crashed probe infrastructure returns verdict
-  `fail` and exit code `50`.
+The binary knows nothing about cloud providers, instance shapes, regions, or
+reservations — callers own all of that. See [PLAN.md](PLAN.md) for the full
+design and [docs/contract.md](docs/contract.md) for the frozen MVP contract.
 
-See [docs/contract.md](docs/contract.md) for the frozen MVP contract.
+## Exit codes
 
-## What We Have Now
+| Exit | Verdict | Meaning |
+|---:|---|---|
+| 0 | `observed` / `pass` | Inventory succeeded, or check passed. |
+| 10 | `warn` | Check passed with warnings. |
+| 20 | `retry` | Transient probe failure or timeout — try again. |
+| 30 | `fail` | Expected-spec mismatch (identity or health). |
+| 40 | `fail` | CUDA usability or fabric readiness failed. |
+| 50 | `fail` | GPU stack absent or inaccessible, invalid input, or probe infrastructure failure. |
 
-- C++20 project skeleton.
-- CMake + Ninja presets for dev, strict, release, and relwithdebinfo builds.
-- Convenience `Makefile`.
-- Placeholder `gpu-qual` binary in `src/main.cpp`.
-- Version, verdict, exit-code, reason-code, and result-routing tests.
+Detailed reason codes accompany every non-zero result in the JSON output.
 
-The expected-spec parser, reconciler, JSON output, fake backend, supervisor,
-NVML inventory backend, and optional CUDA smoke path are planned but not
-implemented yet.
+## Current state
 
-## Setup
+Implemented: C++20 skeleton, CMake + Ninja presets, convenience Makefile,
+placeholder binary, and tests for version, verdict, exit-code, reason-code, and
+result routing.
 
-Install build tools.
+Not yet implemented: spec parser, reconciler, JSON output, fake backend,
+supervisor, NVML backend, CUDA smoke.
 
-macOS:
+## Build
 
-```sh
-brew install cmake ninja
-```
-
-Ubuntu:
+Install build tools — macOS: `brew install cmake ninja`; Ubuntu:
+`sudo apt install -y build-essential cmake ninja-build`.
 
 ```sh
-sudo apt update
-sudo apt install -y build-essential cmake ninja-build
-```
-
-Build and test:
-
-```sh
-make dev
-```
-
-Run:
-
-```sh
-make run
-```
-
-Install to `./dist`:
-
-```sh
-make install PRESET=relwithdebinfo
-```
-
-## Useful Commands
-
-```sh
-make list      # list CMake presets
-make strict    # warnings-as-errors dev build
-make release   # release build + tests
-make clean     # remove generated build outputs
+make dev        # build + test (default preset)
+make run        # build and run the binary
+make strict     # warnings-as-errors build
+make release    # release build + tests
+make install PRESET=relwithdebinfo   # install to ./dist
+make list       # list CMake presets
+make clean      # remove build outputs
 ```

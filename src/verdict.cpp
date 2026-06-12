@@ -209,4 +209,16 @@ namespace gpu_qual {
 
     return res;
   }
+
+  Reason make_reason(ReasonCode rc, std::string field = {}, nlohmann::json expected = {}, nlohmann::json observed = {}) {
+    Reason reason = {
+      .code = rc,
+      .cls = default_class(rc),
+      .field = field,
+      .expected = expected,
+      .observed = observed,
+    };
+    
+    return reason;
+  }
 }

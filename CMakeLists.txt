@@ -33,6 +33,7 @@ set_target_properties(gpuqual PROPERTIES OUTPUT_NAME gpu-qual)
 target_sources(gpuqual PRIVATE
   src/main.cpp
   src/verdict.cpp
+  src/io_json.cpp
 )
 
 target_compile_features(gpuqual PRIVATE cxx_std_20)
