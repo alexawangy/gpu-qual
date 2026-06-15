@@ -79,7 +79,7 @@
               "description": "Maximum allowed uncorrectable ECC errors since last driver reload or GPU reset. 0 means reject any GPU with a current-session error."
             },
             "max_aggregate_uncorrectable_ecc": {
-              "type": "integer",
+              "type": ["integer", "null"],
               "minimum": 0,
               "description": "Maximum allowed lifetime uncorrectable ECC errors persisted in InfoROM. Null or absent means do not check."
             },

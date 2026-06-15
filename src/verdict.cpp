@@ -106,6 +106,24 @@ namespace gpu_qual {
         return "NVML_NO_PERMISSION";
       case ReasonCode::NO_NVIDIA_DEVICES:
         return "NO_NVIDIA_DEVICES";
+      case ReasonCode::DRIVER_VERSION_BELOW_MIN:
+        return "DRIVER_VERSION_BELOW_MIN";
+      case ReasonCode::ECC_MODE_MISMATCH:
+        return "ECC_MODE_MISMATCH";
+      case ReasonCode::ECC_UNCORRECTABLE_DETECTED:
+        return "ECC_UNCORRECTABLE_DETECTED";
+      case ReasonCode::ROW_REMAP_PENDING:
+        return "ROW_REMAP_PENDING";
+      case ReasonCode::ROW_REMAP_FAILURE:
+        return "ROW_REMAP_FAILURE";
+      case ReasonCode::RETIRED_PAGES_PENDING:
+        return "RETIRED_PAGES_PENDING";
+      case ReasonCode::GPU_RECOVERY_ACTION_REQUIRED:
+        return "GPU_RECOVERY_ACTION_REQUIRED";
+      case ReasonCode::FABRIC_NOT_READY:
+        return "FABRIC_NOT_READY";
+      case ReasonCode::FABRIC_NOT_APPLICABLE:
+        return "FABRIC_NOT_APPLICABLE";
       case ReasonCode::CUDA_LIBRARY_NOT_FOUND:
         return "CUDA_LIBRARY_NOT_FOUND";
       case ReasonCode::CUDA_INIT_FAILED:
@@ -136,9 +154,13 @@ namespace gpu_qual {
       case ReasonCode::PROBE_TIMEOUT:
         return ReasonClass::RETRY;
       case ReasonCode::CUDA_VISIBLE_COUNT_BELOW_MIN:
+      case ReasonCode::FABRIC_NOT_APPLICABLE:
       case ReasonCode::FIELD_UNSUPPORTED:
       case ReasonCode::UNKNOWN_FIELD_IGNORED:
         return ReasonClass::REPORT;
+      case ReasonCode::DRIVER_VERSION_BELOW_MIN:
+      case ReasonCode::RETIRED_PAGES_PENDING:
+        return ReasonClass::WARN;
       case ReasonCode::GPU_COUNT_MISMATCH:
       case ReasonCode::GPU_NAME_MISMATCH:
       case ReasonCode::GPU_MEMORY_BELOW_MIN:
@@ -154,6 +176,12 @@ namespace gpu_qual {
       case ReasonCode::EXPECTED_SPEC_INVALID:
       case ReasonCode::PROBE_CHILD_CRASHED:
       case ReasonCode::PROBE_OUTPUT_INVALID:
+      case ReasonCode::ECC_MODE_MISMATCH:
+      case ReasonCode::ECC_UNCORRECTABLE_DETECTED:
+      case ReasonCode::ROW_REMAP_PENDING:
+      case ReasonCode::ROW_REMAP_FAILURE:
+      case ReasonCode::GPU_RECOVERY_ACTION_REQUIRED:
+      case ReasonCode::FABRIC_NOT_READY:
         return ReasonClass::HARD;
     }
 
@@ -162,21 +190,29 @@ namespace gpu_qual {
 
   ExitCode default_exit_code(ReasonCode rc) {
     switch (rc) {
+      case ReasonCode::FABRIC_NOT_APPLICABLE:
+        return ExitCode::OK;
       case ReasonCode::GPU_COUNT_MISMATCH:
       case ReasonCode::GPU_NAME_MISMATCH:
       case ReasonCode::GPU_MEMORY_BELOW_MIN:
       case ReasonCode::MIG_MODE_MISMATCH:
+      case ReasonCode::ECC_MODE_MISMATCH:
+      case ReasonCode::ECC_UNCORRECTABLE_DETECTED:
+      case ReasonCode::ROW_REMAP_PENDING:
         return ExitCode::FAIL_CONTRACT;
       case ReasonCode::CUDA_LIBRARY_NOT_FOUND:
       case ReasonCode::CUDA_INIT_FAILED:
       case ReasonCode::CUDA_CONTEXT_FAILED:
       case ReasonCode::CUDA_SMOKE_FAILED:
+      case ReasonCode::FABRIC_NOT_READY:
         return ExitCode::FAIL_USABILITY;
       case ReasonCode::PROBE_TIMEOUT:
         return ExitCode::RETRY;
       case ReasonCode::CUDA_VISIBLE_COUNT_BELOW_MIN:
       case ReasonCode::FIELD_UNSUPPORTED:
       case ReasonCode::UNKNOWN_FIELD_IGNORED:
+      case ReasonCode::DRIVER_VERSION_BELOW_MIN:
+      case ReasonCode::RETIRED_PAGES_PENDING:
         return ExitCode::WARN;
       case ReasonCode::NVML_LIBRARY_NOT_FOUND:
       case ReasonCode::NVML_INIT_FAILED:
@@ -185,6 +221,8 @@ namespace gpu_qual {
       case ReasonCode::EXPECTED_SPEC_INVALID:
       case ReasonCode::PROBE_CHILD_CRASHED:
       case ReasonCode::PROBE_OUTPUT_INVALID:
+      case ReasonCode::ROW_REMAP_FAILURE:
+      case ReasonCode::GPU_RECOVERY_ACTION_REQUIRED:
         return ExitCode::FAIL_STACK;
     }
 

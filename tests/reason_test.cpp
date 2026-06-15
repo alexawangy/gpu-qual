@@ -35,6 +35,37 @@ TEST_CASE("ReasonCode to_string returns stable names") {
     CHECK(std::string{to_string(ReasonCode::UNKNOWN_FIELD_IGNORED)}        == "UNKNOWN_FIELD_IGNORED");
 }
 
+TEST_CASE("contract health and fabric reason codes expose stable names and classes") {
+    using gpu_qual::ReasonClass;
+    using gpu_qual::ReasonCode;
+    using gpu_qual::default_class;
+    using gpu_qual::to_string;
+
+    struct Row {
+        ReasonCode code;
+        const char *name;
+        ReasonClass cls;
+    };
+
+    const Row rows[] = {
+        {ReasonCode::DRIVER_VERSION_BELOW_MIN,      "DRIVER_VERSION_BELOW_MIN",      ReasonClass::WARN},
+        {ReasonCode::ECC_MODE_MISMATCH,             "ECC_MODE_MISMATCH",             ReasonClass::HARD},
+        {ReasonCode::ECC_UNCORRECTABLE_DETECTED,    "ECC_UNCORRECTABLE_DETECTED",    ReasonClass::HARD},
+        {ReasonCode::ROW_REMAP_PENDING,             "ROW_REMAP_PENDING",             ReasonClass::HARD},
+        {ReasonCode::ROW_REMAP_FAILURE,             "ROW_REMAP_FAILURE",             ReasonClass::HARD},
+        {ReasonCode::RETIRED_PAGES_PENDING,         "RETIRED_PAGES_PENDING",         ReasonClass::WARN},
+        {ReasonCode::GPU_RECOVERY_ACTION_REQUIRED,  "GPU_RECOVERY_ACTION_REQUIRED",  ReasonClass::HARD},
+        {ReasonCode::FABRIC_NOT_READY,              "FABRIC_NOT_READY",              ReasonClass::HARD},
+        {ReasonCode::FABRIC_NOT_APPLICABLE,         "FABRIC_NOT_APPLICABLE",         ReasonClass::REPORT},
+    };
+
+    for (const auto &row : rows) {
+        INFO(row.name);
+        CHECK(std::string{to_string(row.code)} == row.name);
+        CHECK(default_class(row.code) == row.cls);
+    }
+}
+
 TEST_CASE("default_class returns correct class for each code") {
     using gpu_qual::ReasonClass;
     using gpu_qual::ReasonCode;
@@ -80,4 +111,31 @@ TEST_CASE("default_exit_code returns correct exit band for each code") {
 
     CHECK(default_exit_code(ReasonCode::PROBE_TIMEOUT)          == ExitCode::RETRY);
     CHECK(default_exit_code(ReasonCode::FIELD_UNSUPPORTED)      == ExitCode::WARN);
+}
+
+TEST_CASE("contract health and fabric reason codes have stable default exit bands") {
+    using gpu_qual::ExitCode;
+    using gpu_qual::ReasonCode;
+    using gpu_qual::default_exit_code;
+
+    struct Row {
+        ReasonCode code;
+        ExitCode exit_code;
+    };
+
+    const Row rows[] = {
+        {ReasonCode::DRIVER_VERSION_BELOW_MIN,      ExitCode::WARN},
+        {ReasonCode::ECC_MODE_MISMATCH,             ExitCode::FAIL_CONTRACT},
+        {ReasonCode::ECC_UNCORRECTABLE_DETECTED,    ExitCode::FAIL_CONTRACT},
+        {ReasonCode::ROW_REMAP_PENDING,             ExitCode::FAIL_CONTRACT},
+        {ReasonCode::ROW_REMAP_FAILURE,             ExitCode::FAIL_STACK},
+        {ReasonCode::RETIRED_PAGES_PENDING,         ExitCode::WARN},
+        {ReasonCode::GPU_RECOVERY_ACTION_REQUIRED,  ExitCode::FAIL_STACK},
+        {ReasonCode::FABRIC_NOT_READY,              ExitCode::FAIL_USABILITY},
+        {ReasonCode::FABRIC_NOT_APPLICABLE,         ExitCode::OK},
+    };
+
+    for (const auto &row : rows) {
+        CHECK(default_exit_code(row.code) == row.exit_code);
+    }
 }

@@ -38,3 +38,37 @@ TEST_CASE("compute_result selects highest-impact exit band") {
     CHECK(fail.verdict   == gpu_qual::Verdict::FAIL);
     CHECK(fail.exit_code == gpu_qual::ExitCode::FAIL_STACK);
 }
+
+TEST_CASE("compute_result folds contract health and fabric reason codes") {
+    const auto stack = gpu_qual::compute_result(
+        gpu_qual::Mode::CHECK,
+        {
+            r(gpu_qual::ReasonCode::ROW_REMAP_FAILURE),
+            r(gpu_qual::ReasonCode::ECC_MODE_MISMATCH),
+        }
+    );
+    CHECK(stack.verdict   == gpu_qual::Verdict::FAIL);
+    CHECK(stack.exit_code == gpu_qual::ExitCode::FAIL_STACK);
+
+    const auto usability = gpu_qual::compute_result(
+        gpu_qual::Mode::CHECK,
+        {
+            r(gpu_qual::ReasonCode::FABRIC_NOT_READY),
+            r(gpu_qual::ReasonCode::GPU_COUNT_MISMATCH),
+        }
+    );
+    CHECK(usability.verdict   == gpu_qual::Verdict::FAIL);
+    CHECK(usability.exit_code == gpu_qual::ExitCode::FAIL_USABILITY);
+
+    const auto not_applicable = gpu_qual::compute_result(
+        gpu_qual::Mode::INVENTORY,
+        {r(gpu_qual::ReasonCode::FABRIC_NOT_APPLICABLE)}
+    );
+    CHECK(not_applicable.verdict   == gpu_qual::Verdict::OBSERVED);
+    CHECK(not_applicable.exit_code == gpu_qual::ExitCode::OK);
+    REQUIRE(not_applicable.reasons.size() == 1);
+    CHECK(not_applicable.reasons[0].code == gpu_qual::ReasonCode::FABRIC_NOT_APPLICABLE);
+
+    CHECK(gpu_qual::make_reason(gpu_qual::ReasonCode::DRIVER_VERSION_BELOW_MIN).cls ==
+          gpu_qual::ReasonClass::WARN);
+}
