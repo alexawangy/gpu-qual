@@ -7,7 +7,24 @@
 #include <vector>
 namespace gpu_qual {
   enum class MigMode { ENABLED, DISABLED };
+  enum class RecoveryAction { NONE, RESET, RESET_AND_DRAIN, REBOOT, FIELD_RMA };
   std::string_view to_string(MigMode);
+  std::string_view to_string(RecoveryAction);
+
+  struct GpuHealth {
+    std::optional<bool> ecc_mode_enabled;
+    std::optional<long long> volatile_uncorrectable_ecc;
+    std::optional<long long> aggregate_uncorrectable_ecc;
+    std::optional<bool> row_remap_pending;
+    std::optional<bool> row_remap_failure;
+    std::optional<bool> pending_retired_pages;
+    std::optional<RecoveryAction> recovery_action;
+  };
+
+  struct FabricState {
+    bool applicable = false;
+    std::optional<bool> ready;
+  };
 
   struct NvmlState {
     bool init_ok;
@@ -29,6 +46,8 @@ namespace gpu_qual {
     std::string pci_bdf;
     long long memory_mib = 0;
     MigMode mig_mode = MigMode::DISABLED;
+
+    std::optional<GpuHealth> health;
   };
 
   struct FallbackSignals {
@@ -42,5 +61,6 @@ namespace gpu_qual {
     CudaState cuda;
     std::vector<GpuInfo> gpus;
     FallbackSignals fallback;
+    std::optional<FabricState> fabric;
   };
 }

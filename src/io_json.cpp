@@ -13,6 +13,33 @@ namespace {
   }
 }
 
+json gpu_qual::to_json(const GpuHealth &health) {
+  json jres = {
+    {"ecc_mode_enabled", optional_or_null(health.ecc_mode_enabled)},
+    {"volatile_uncorrectable_ecc", optional_or_null(health.volatile_uncorrectable_ecc)},
+    {"aggregate_uncorrectable_ecc", optional_or_null(health.aggregate_uncorrectable_ecc)},
+    {"row_remap_pending", optional_or_null(health.row_remap_pending)},
+    {"row_remap_failure", optional_or_null(health.row_remap_failure)},
+    {"pending_retired_pages", optional_or_null(health.pending_retired_pages)},
+    {"recovery_action", nullptr},
+  };
+
+  if (health.recovery_action.has_value()) {
+    jres["recovery_action"] = to_string(*health.recovery_action);
+  }
+
+  return jres;
+}
+
+json gpu_qual::to_json(const FabricState& fabric) {
+  json jres = {
+    {"applicable", fabric.applicable},
+    {"ready", optional_or_null(fabric.ready)},
+  };
+  
+  return jres;
+}
+
 json gpu_qual::to_json(const NvmlState &nvml) {
   json jres = {
     {"init_ok", nvml.init_ok},
@@ -44,6 +71,10 @@ json gpu_qual::to_json(const GpuInfo &gpu) {
     {"mig_mode", gpu_qual::to_string(gpu.mig_mode)},
   };
 
+  if (gpu.health.has_value()) {
+    jres["health"] = to_json(*gpu.health);
+  }
+
   return jres;
 }
 
@@ -61,9 +92,9 @@ json gpu_qual::to_json(const Result &res) {
    json jres = {
      {"tool_version", res.tool_version},
      {"schema_version", res.schema_version},
-     {"mode", gpu_qual::to_string(res.mode)},
+     {"mode", to_string(res.mode)},
      {"exit_code", static_cast<int>(res.exit_code)},
-     {"verdict", gpu_qual::to_string(res.verdict)},
+     {"verdict", to_string(res.verdict)},
    };
 
    if (res.observed.has_value()) jres["observed"] = to_json(*res.observed);
@@ -72,8 +103,8 @@ json gpu_qual::to_json(const Result &res) {
 
    for (const Reason &reason : res.reasons) {
      json jr = {
-       {"code", gpu_qual::to_string(reason.code)},
-       {"class", gpu_qual::to_string(reason.cls)}
+       {"code", to_string(reason.code)},
+       {"class", to_string(reason.cls)}
      };
 
      if (!reason.field.empty()) jr["field"] = reason.field;
@@ -93,6 +124,10 @@ json gpu_qual::to_json(const ObservedState &observed) {
     {"fallback", to_json(observed.fallback)},
     {"gpu_count", observed.gpus.size()},
   };
+
+  if (observed.fabric.has_value()) {
+    jres["fabric"] = to_json(*observed.fabric);
+  }
 
   jres["gpus"] = json::array();
 
