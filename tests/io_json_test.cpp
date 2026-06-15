@@ -1,74 +1,69 @@
 #include <catch2/catch_test_macros.hpp>
 #include <gpu_qual/io_json.hpp>
 
-TEST_CASE("to_json emits the inventory-success golden object") {
-    const auto result = gpu_qual::compute_result(gpu_qual::Mode::INVENTORY, {});
+#include <string>
 
+using namespace gpu_qual;
+
+TEST_CASE("version constants are stable") {
+    CHECK(std::string{kToolVersion}   == "gpu-qual/0.1.0");
+    CHECK(std::string{kSchemaVersion} == "0.1");
+}
+
+TEST_CASE("to_json emits the inventory-success golden object") {
     const nlohmann::json expected = {
-        {"tool_version", gpu_qual::kToolVersion},
-        {"schema_version", gpu_qual::kSchemaVersion},
+        {"tool_version", kToolVersion},
+        {"schema_version", kSchemaVersion},
         {"mode", "inventory"},
         {"verdict", "observed"},
         {"exit_code", 0},
         {"reasons", nlohmann::json::array()},
     };
 
-    CHECK(gpu_qual::to_json(result) == expected);
+    CHECK(to_json(compute_result(Mode::INVENTORY, {})) == expected);
 }
 
-TEST_CASE("to_json serializes a bare reason minimally, omitting unset keys") {
-    const auto result = gpu_qual::compute_result(
-        gpu_qual::Mode::INVENTORY,
-        {gpu_qual::make_reason(gpu_qual::ReasonCode::NVML_LIBRARY_NOT_FOUND)}
-    );
+TEST_CASE("to_json gives a reason value keys only when they are set") {
+    SECTION("a bare reason carries only code and class") {
+        const auto j = to_json(compute_result(
+            Mode::INVENTORY, {make_reason(ReasonCode::NVML_LIBRARY_NOT_FOUND)}));
+        CHECK(j["verdict"]   == "fail");
+        CHECK(j["exit_code"] == 50);
 
-    const auto j = gpu_qual::to_json(result);
-    CHECK(j["verdict"] == "fail");
-    CHECK(j["exit_code"] == 50);
+        REQUIRE(j["reasons"].size() == 1);
+        CHECK(j["reasons"][0] == nlohmann::json{
+            {"code", "NVML_LIBRARY_NOT_FOUND"},
+            {"class", "hard"},
+        });
+    }
 
-    const nlohmann::json expected_reason = {
-        {"code", "NVML_LIBRARY_NOT_FOUND"},
-        {"class", "hard"},
-    };
-    REQUIRE(j["reasons"].size() == 1);
-    CHECK(j["reasons"][0] == expected_reason);
-}
+    SECTION("typed expected/observed values pass through unchanged") {
+        const auto j = to_json(compute_result(
+            Mode::CHECK,
+            {make_reason(ReasonCode::GPU_COUNT_MISMATCH, "expected.gpu_count", 8, 7)}));
+        REQUIRE(j["reasons"].size() == 1);
 
-TEST_CASE("to_json passes typed expected/observed values through as-is") {
-    const auto result = gpu_qual::compute_result(
-        gpu_qual::Mode::CHECK,
-        {gpu_qual::make_reason(gpu_qual::ReasonCode::GPU_COUNT_MISMATCH,
-                               "expected.gpu_count", 8, 7)}
-    );
+        const auto &jr = j["reasons"][0];
+        CHECK(jr == nlohmann::json{
+            {"code", "GPU_COUNT_MISMATCH"},
+            {"class", "hard"},
+            {"field", "expected.gpu_count"},
+            {"expected", 8},
+            {"observed", 7},
+        });
+        CHECK(jr["expected"].is_number_integer());
+        CHECK(jr["observed"].is_number_integer());
+    }
 
-    const auto j = gpu_qual::to_json(result);
-    REQUIRE(j["reasons"].size() == 1);
+    SECTION("a retry-class reason has no value keys") {
+        const auto j = to_json(compute_result(
+            Mode::INVENTORY, {make_reason(ReasonCode::PROBE_TIMEOUT)}));
+        REQUIRE(j["reasons"].size() == 1);
 
-    const auto &jr = j["reasons"][0];
-    const nlohmann::json expected_reason = {
-        {"code", "GPU_COUNT_MISMATCH"},
-        {"class", "hard"},
-        {"field", "expected.gpu_count"},
-        {"expected", 8},
-        {"observed", 7},
-    };
-    CHECK(jr == expected_reason);
-    CHECK(jr["expected"].is_number_integer());
-    CHECK(jr["observed"].is_number_integer());
-}
-
-TEST_CASE("to_json gives a retry-class reason no value keys") {
-    const auto result = gpu_qual::compute_result(
-        gpu_qual::Mode::INVENTORY,
-        {gpu_qual::make_reason(gpu_qual::ReasonCode::PROBE_TIMEOUT)}
-    );
-
-    const auto j = gpu_qual::to_json(result);
-    REQUIRE(j["reasons"].size() == 1);
-
-    const auto &jr = j["reasons"][0];
-    CHECK(jr["class"] == "retry");
-    CHECK_FALSE(jr.contains("field"));
-    CHECK_FALSE(jr.contains("expected"));
-    CHECK_FALSE(jr.contains("observed"));
+        const auto &jr = j["reasons"][0];
+        CHECK(jr["class"] == "retry");
+        CHECK_FALSE(jr.contains("field"));
+        CHECK_FALSE(jr.contains("expected"));
+        CHECK_FALSE(jr.contains("observed"));
+    }
 }
