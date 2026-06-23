@@ -2,6 +2,7 @@
 
 #include "gpu_qual/verdict.hpp"
 #include "observed.hpp"
+#include <cstddef>
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -78,8 +79,14 @@ struct SpecParseResult {
   std::optional<ExpectedSpec> spec;
   std::vector<Reason> reasons;
 
-  bool ok() const { return spec.has_value(); }
+  bool ok() const {
+    return spec.has_value();
+  }
 };
+
+// Upper bound on the serialized size of caller `metadata`. The CLI/result code
+// should reference this same constant so the limit stays in one place.
+constexpr std::size_t kMaxMetadataBytes = 16 * 1024;
 
 SpecParseResult parse_spec(std::string_view json_text);
 } // namespace gpu_qual
