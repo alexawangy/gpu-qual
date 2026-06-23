@@ -31,6 +31,14 @@ list:
 configure:
 	$(CMAKE) --preset $(PRESET)
 
+format:
+	find . \
+  	\( -path './build' -o -path './build/*' -o -path '*/generated/*' -o -path '*/gen/*' \) -prune \
+  	-o -type f \( -name '*.cpp' -o -name '*.hpp' \) \
+  	! -name '*.pb.hpp' ! -name '*.pb.cpp' \
+  	! -name '*.generated.hpp' ! -name '*.generated.cpp' \
+  	-print0 | xargs -0 clang-format -i
+
 build: configure
 	$(CMAKE) --build --preset $(PRESET)
 
