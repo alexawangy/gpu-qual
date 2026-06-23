@@ -30,6 +30,7 @@ add_library(gpuqual STATIC
   src/verdict.cpp
   src/io_json.cpp
   src/observed.cpp
+  src/spec.cpp
 )
 
 target_compile_features(gpuqual PUBLIC cxx_std_20)
