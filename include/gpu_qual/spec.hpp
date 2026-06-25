@@ -1,11 +1,13 @@
 #pragma once
 
-#include "gpu_qual/verdict.hpp"
-#include "observed.hpp"
 #include <cstddef>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <vector>
+
+#include <gpu_qual/observed.hpp>
+#include <gpu_qual/verdict.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -17,6 +19,7 @@ std::string_view to_string(Severity);
 std::optional<Severity> severity_from_string(std::string_view);
 
 enum class MigExpectation { ENABLED, DISABLED, ANY };
+std::string_view to_string(MigExpectation);
 std::optional<MigExpectation> mig_expectation_from_string(std::string_view);
 std::optional<RecoveryAction> recovery_action_from_string(std::string_view);
 

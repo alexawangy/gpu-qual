@@ -41,6 +41,16 @@ std::string_view to_string(gpu_qual::Severity sev) {
   return "unknown";
 }
 
+std::string_view to_string(gpu_qual::MigExpectation mgexp) {
+  switch (mgexp) {
+  case MigExpectation::ANY: return "any";
+  case MigExpectation::DISABLED: return "disabled";
+  case MigExpectation::ENABLED: return "enabled";
+  }
+
+  return "unknown";
+}
+
 std::optional<Severity> severity_from_string(std::string_view sv) {
   std::string res = sv_tolower(sv);
 
