@@ -19,6 +19,7 @@ std::string_view to_string(Severity);
 std::optional<Severity> severity_from_string(std::string_view);
 
 enum class MigExpectation { ENABLED, DISABLED, ANY };
+std::string_view to_string(MigExpectation);
 std::optional<MigExpectation> mig_expectation_from_string(std::string_view);
 std::optional<RecoveryAction> recovery_action_from_string(std::string_view);
 
