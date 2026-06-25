@@ -1,11 +1,13 @@
 #pragma once
 
-#include "gpu_qual/verdict.hpp"
-#include "observed.hpp"
 #include <cstddef>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <vector>
+
+#include <gpu_qual/observed.hpp>
+#include <gpu_qual/verdict.hpp>
 
 #include <nlohmann/json.hpp>
 
