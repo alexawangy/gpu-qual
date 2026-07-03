@@ -11,6 +11,10 @@
 #include <nlohmann/json.hpp>
 
 namespace gpu_qual {
+// Namespace-scoped so code in gpu_qual can say `json` without leaking the
+// alias into every includer's global namespace.
+using json = nlohmann::json;
+
 enum class Mode { INVENTORY, CHECK };
 enum class Verdict { OBSERVED, PASS, WARN, RETRY, FAIL };
 enum class ExitCode : int {
@@ -72,13 +76,13 @@ struct Reason {
   ReasonCode code;
   ReasonClass cls;
   std::string field;
-  nlohmann::json expected;
-  nlohmann::json observed;
+  json expected;
+  json observed;
 };
 
 struct Result {
-  std::string tool_version = kToolVersion;
-  std::string schema_version = kSchemaVersion;
+  std::string_view tool_version = kToolVersion;
+  std::string_view schema_version = kSchemaVersion;
   Mode mode;
   Verdict verdict;
   ExitCode exit_code;
@@ -88,6 +92,6 @@ struct Result {
 
 Result compute_result(Mode, std::vector<Reason>);
 
-Reason make_reason(ReasonCode code, std::string field = {}, nlohmann::json expected = {},
-                   nlohmann::json observed = {});
+Reason make_reason(ReasonCode code, std::string field = {}, json expected = {},
+                   json observed = {});
 } // namespace gpu_qual

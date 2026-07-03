@@ -7,6 +7,8 @@
 #include <optional>
 #include <string_view>
 
+#include <nlohmann/json.hpp>
+
 namespace gpu_qual {
 
 // Used by spec parser to return invalid spr.

@@ -5,8 +5,6 @@
 
 #include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
-
 namespace gpu_qual {
 json to_json(const GpuHealth&);
 json to_json(const FabricState&);

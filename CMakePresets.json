@@ -32,7 +32,8 @@
       "description": "Optimized release build.",
       "inherits": "ninja-base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "GPUQUAL_SLIM_BINARY": "ON"
       }
     },
     {

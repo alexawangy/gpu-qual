@@ -32,6 +32,7 @@ add_library(gpuqual STATIC
   src/observed.cpp
   src/spec.cpp
   src/reconcile.cpp
+  src/backend.cpp
 )
 
 target_compile_features(gpuqual PUBLIC cxx_std_20)
@@ -47,6 +48,34 @@ target_include_directories(
 add_executable(gpu-qual src/main.cpp)
 
 target_link_libraries(gpu-qual PRIVATE gpuqual)
+
+option(GPUQUAL_SLIM_BINARY "Size/link optimizations for release artifacts" OFF)
+
+if(GPUQUAL_SLIM_BINARY AND NOT MSVC)
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT GPUQUAL_IPO_SUPPORTED OUTPUT GPUQUAL_IPO_MESSAGE)
+  if(NOT GPUQUAL_IPO_SUPPORTED)
+    message(STATUS "IPO/LTO not supported: ${GPUQUAL_IPO_MESSAGE}")
+  endif()
+
+  foreach(target gpuqual gpu-qual)
+    # The library defines no polymorphic types; RTTI is dead weight.
+    target_compile_options(${target} PRIVATE -fno-rtti -ffunction-sections -fdata-sections)
+    if(GPUQUAL_IPO_SUPPORTED)
+      set_property(TARGET ${target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
+  endforeach()
+
+  if(APPLE)
+    target_link_options(gpu-qual PRIVATE -Wl,-dead_strip -Wl,-x)
+  else()
+    # Static C++ runtime so one binary runs on any node's glibc++, but stay a
+    # dynamic executable: the probe must dlopen libnvidia-ml.so.1 at runtime,
+    # which a fully static (musl) binary cannot do against a glibc-linked NVML.
+    target_link_options(gpu-qual PRIVATE
+      -Wl,--gc-sections -s -static-libstdc++ -static-libgcc)
+  endif()
+endif()
 
 if(GPUQUAL_ENABLE_WARNINGS)
   foreach(target gpuqual gpu-qual)

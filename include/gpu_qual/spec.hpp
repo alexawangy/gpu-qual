@@ -11,8 +11,6 @@
 
 #include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
-
 namespace gpu_qual {
 enum class Severity { HARD, WARN, REPORT };
 std::string_view to_string(Severity);
