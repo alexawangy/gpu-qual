@@ -31,6 +31,27 @@ Verdict verdict_for(Mode mode, ExitCode exit_code) {
 
   return Verdict::FAIL;
 }
+
+// Exit band for a single reason. A reason still at its code's default class is
+// resolved straight from default_exit_code -- the single source of truth for
+// per-code bands. Only a policy override reaches the switch: escalating to HARD
+// is a contract failure, while a downgrade follows its class band. A code left
+// at its default class keeps its table band, which is why an advisory such as
+// FIELD_UNSUPPORTED stays at WARN rather than OK. (PLAN.md §10 "Band".)
+ExitCode exit_band(const Reason& reason) {
+  if (reason.cls == default_class(reason.code)) {
+    return default_exit_code(reason.code);
+  }
+
+  switch (reason.cls) {
+  case ReasonClass::HARD: return ExitCode::FAIL_CONTRACT;
+  case ReasonClass::WARN: return ExitCode::WARN;
+  case ReasonClass::REPORT: return ExitCode::OK;
+  case ReasonClass::RETRY: return ExitCode::RETRY;
+  }
+
+  return ExitCode::FAIL_CONTRACT;
+}
 } // namespace
 
 std::string_view to_string(Mode mode) {
@@ -173,7 +194,7 @@ ExitCode default_exit_code(ReasonCode rc) {
 Result compute_result(Mode mode, std::vector<Reason> reasons) {
   auto exit_code = ExitCode::OK;
   for (const auto& reason : reasons) {
-    const auto candidate = default_exit_code(reason.code);
+    const auto candidate = exit_band(reason);
     if (priority(candidate) > priority(exit_code)) {
       exit_code = candidate;
     }
