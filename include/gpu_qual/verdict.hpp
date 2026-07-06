@@ -92,6 +92,5 @@ struct Result {
 
 Result compute_result(Mode, std::vector<Reason>);
 
-Reason make_reason(ReasonCode code, std::string field = {}, json expected = {},
-                   json observed = {});
+Reason make_reason(ReasonCode code, std::string field = {}, json expected = {}, json observed = {});
 } // namespace gpu_qual

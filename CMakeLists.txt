@@ -33,6 +33,7 @@ add_library(gpuqual STATIC
   src/spec.cpp
   src/reconcile.cpp
   src/backend.cpp
+  src/mock_backend.cpp
 )
 
 target_compile_features(gpuqual PUBLIC cxx_std_20)
