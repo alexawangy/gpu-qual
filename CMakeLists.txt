@@ -33,6 +33,7 @@ add_library(gpuqual STATIC
   src/spec.cpp
   src/reconcile.cpp
   src/backend.cpp
+  src/pipeline.cpp
   src/mock_backend.cpp
 )
 
