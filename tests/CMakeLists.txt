@@ -32,6 +32,8 @@ target_link_libraries(gpuqual_tests
     Catch2::Catch2WithMain
 )
 
+target_include_directories(gpuqual_tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
+
 list(APPEND CMAKE_MODULE_PATH "${catch2_SOURCE_DIR}/extras")
 include(Catch)
 catch_discover_tests(gpuqual_tests)
