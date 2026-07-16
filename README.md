@@ -1,6 +1,6 @@
 # gpu-qual
 
-**Status: active development — core qualification logic is implemented; hardware probing is not.**
+**Status: active development**
 
 `gpu-qual` is a small, provider-agnostic GPU node qualification probe. It runs
 locally on an NVIDIA GPU node, answers one question — *is the GPU stack
