@@ -1,6 +1,6 @@
 # gpu-qual
 
-**Status: early development — core types and tests only; the probe itself is not implemented yet.**
+**Status: active development — core qualification logic is implemented; hardware probing is not.**
 
 `gpu-qual` is a small, provider-agnostic GPU node qualification probe. It runs
 locally on an NVIDIA GPU node, answers one question — *is the GPU stack
@@ -31,12 +31,10 @@ Detailed reason codes accompany every non-zero result in the JSON output.
 
 ## Current state
 
-Implemented: C++20 skeleton, CMake + Ninja presets, convenience Makefile,
-placeholder binary, and tests for version, verdict, exit-code, reason-code, and
-result routing.
+Implemented: C++20 data model, spec parsing, reconciliation, result routing,
+JSON serialization, tests, and build/release tooling.
 
-Not yet implemented: spec parser, reconciler, JSON output, fake backend,
-supervisor, NVML backend, CUDA smoke.
+Next: the real CLI, fake and NVML backends, CUDA smoke, and supervision/timeouts.
 
 ## Build
 
