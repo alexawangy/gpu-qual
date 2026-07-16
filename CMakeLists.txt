@@ -27,12 +27,13 @@ option(GPUQUAL_ENABLE_WARNINGS "Enable compiler warnings for gpuqual targets" ON
 option(GPUQUAL_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 add_library(gpuqual STATIC
+  src/version.cpp
   src/verdict.cpp
   src/io_json.cpp
   src/observed.cpp
   src/spec.cpp
   src/reconcile.cpp
-  src/backend.cpp
+  src/pipeline.cpp
 )
 
 target_compile_features(gpuqual PUBLIC cxx_std_20)
@@ -77,8 +78,8 @@ if(GPUQUAL_SLIM_BINARY AND NOT MSVC)
   endif()
 endif()
 
-if(GPUQUAL_ENABLE_WARNINGS)
-  foreach(target gpuqual gpu-qual)
+function(gpuqual_configure_warnings target)
+  if(GPUQUAL_ENABLE_WARNINGS)
     if(MSVC)
       target_compile_options(${target} PRIVATE /W4)
       if(GPUQUAL_WARNINGS_AS_ERRORS)
@@ -90,8 +91,12 @@ if(GPUQUAL_ENABLE_WARNINGS)
         target_compile_options(${target} PRIVATE -Werror)
       endif()
     endif()
-  endforeach()
-endif()
+  endif()
+endfunction()
+
+foreach(target gpuqual gpu-qual)
+  gpuqual_configure_warnings(${target})
+endforeach()
 
 install(
   TARGETS gpu-qual

@@ -31,38 +31,13 @@ enum class ReasonCode {
   GPU_COUNT_MISMATCH,
   GPU_NAME_MISMATCH,
   GPU_MEMORY_BELOW_MIN,
-  MIG_MODE_MISMATCH,
-
-  CUDA_VISIBLE_COUNT_BELOW_MIN,
-
   NVML_LIBRARY_NOT_FOUND,
   NVML_INIT_FAILED,
   NVML_NO_PERMISSION,
   NO_NVIDIA_DEVICES,
-
   DRIVER_VERSION_BELOW_MIN,
-  ECC_MODE_MISMATCH,
-  ECC_UNCORRECTABLE_DETECTED,
-  ROW_REMAP_PENDING,
-  ROW_REMAP_FAILURE,
-  RETIRED_PAGES_PENDING,
-  GPU_RECOVERY_ACTION_REQUIRED,
-  FABRIC_NOT_READY,
-  FABRIC_NOT_APPLICABLE,
-
-  CUDA_LIBRARY_NOT_FOUND,
-  CUDA_INIT_FAILED,
-  CUDA_CONTEXT_FAILED,
-  CUDA_SMOKE_FAILED,
-
   EXPECTED_SPEC_INVALID,
-
-  PROBE_TIMEOUT,
-  PROBE_CHILD_CRASHED,
   PROBE_OUTPUT_INVALID,
-
-  FIELD_UNSUPPORTED,
-  UNKNOWN_FIELD_IGNORED,
 };
 
 std::string_view to_string(Mode);
@@ -74,10 +49,9 @@ ExitCode default_exit_code(ReasonCode);
 
 struct Reason {
   ReasonCode code;
-  ReasonClass cls;
   std::string field;
-  json expected;
-  json observed;
+  std::optional<json> expected;
+  std::optional<json> observed;
 };
 
 struct Result {
@@ -92,6 +66,7 @@ struct Result {
 
 Result compute_result(Mode, std::vector<Reason>);
 
-Reason make_reason(ReasonCode code, std::string field = {}, json expected = {},
-                   json observed = {});
+Reason make_reason(ReasonCode code, std::string field = {},
+                   std::optional<json> expected = std::nullopt,
+                   std::optional<json> observed = std::nullopt);
 } // namespace gpu_qual
