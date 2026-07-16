@@ -7,267 +7,40 @@
   "properties": {
     "schema_version": {
       "type": "string",
+      "const": "0.1",
       "description": "JSON schema version"
-    },
-    "metadata": {
-      "type": "object",
-      "description": "Opaque caller metadata. Copied to result but not interpreted by gpu-qual.",
-      "properties": {
-        "request_id": {
-          "type": "string",
-          "description": "Caller-supplied lease, job, or request identifier"
-        },
-        "node_id": {
-          "type": "string",
-          "description": "Caller-supplied node identifier"
-        }
-      },
-      "additionalProperties": true
     },
     "expected": {
       "type": "object",
-      "description": "The expected contract. All fields are optional. Missing fields mean do not check.",
+      "description": "Identity requirements. All fields are optional; missing fields are not checked.",
       "properties": {
         "gpu_count": {
           "type": "integer",
           "minimum": 1,
+          "maximum": 4294967295,
           "description": "Number of physical GPUs expected"
         },
         "allowed_names": {
           "type": "array",
-          "description": "Allowed NVML GPU product names. Empty or absent means do not check.",
           "minItems": 1,
+          "uniqueItems": true,
           "items": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
-          "uniqueItems": true
+          "description": "Allowed NVML GPU product names"
         },
         "min_memory_mib": {
           "type": "integer",
           "minimum": 1,
+          "maximum": 18446744073709551615,
           "description": "Minimum memory per physical GPU in mebibytes (1 MiB = 1024^2 bytes)"
-        },
-        "mig_mode": {
-          "type": "string",
-          "description": "Expected MIG mode. 'any' means do not check.",
-          "enum": [
-            "enabled",
-            "disabled",
-            "any"
-          ]
-        },
-        "min_cuda_visible_devices": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Minimum number of CUDA-visible devices. Only meaningful when cuda_smoke is enabled."
         },
         "min_driver_version": {
           "type": "string",
-          "description": "Minimum acceptable NVIDIA driver version string (e.g. '550.90.07')"
-        },
-        "health": {
-          "type": "object",
-          "description": "Expected GPU health state. All fields are optional. Missing fields mean do not check.",
-          "properties": {
-            "ecc_mode_enabled": {
-              "type": "boolean",
-              "description": "Whether ECC memory protection is expected to be enabled"
-            },
-            "max_volatile_uncorrectable_ecc": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Maximum allowed uncorrectable ECC errors since last driver reload or GPU reset. 0 means reject any GPU with a current-session error."
-            },
-            "max_aggregate_uncorrectable_ecc": {
-              "type": ["integer", "null"],
-              "minimum": 0,
-              "description": "Maximum allowed lifetime uncorrectable ECC errors persisted in InfoROM. Null or absent means do not check."
-            },
-            "allow_row_remap_pending": {
-              "type": "boolean",
-              "description": "Whether to accept GPUs with a row remapping pending (requires GPU reset to apply). False means reject nodes needing a reset."
-            },
-            "allow_row_remap_failure": {
-              "type": "boolean",
-              "description": "Whether to accept GPUs with a row remapping failure (spare rows exhausted, RMA candidate). Should almost always be false."
-            },
-            "allow_pending_retired_pages": {
-              "type": "boolean",
-              "description": "Whether to accept GPUs with pending page retirements (pre-Ampere equivalent of row_remap_pending). False means reject nodes needing a reset."
-            },
-            "disallowed_recovery_actions": {
-              "type": "array",
-              "description": "Recovery actions that must not be present on any GPU. Empty or absent means do not check. Typically set to all non-none values for a clean handoff.",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "none",
-                  "reset",
-                  "reset_and_drain",
-                  "reboot",
-                  "field_rma"
-                ]
-              },
-              "uniqueItems": true
-            }
-          },
-          "additionalProperties": false
-        },
-        "fabric": {
-          "type": "object",
-          "description": "NVSwitch fabric requirements. Auto-skipped on non-NVSwitch hardware.",
-          "properties": {
-            "require_fabric_ready": {
-              "type": "boolean",
-              "description": "Whether the NVLink fabric must be fully initialized. Applies to NVSwitch nodes (DGX/HGX A100/H100, GB200). If fabric is not ready, CUDA multi-GPU workloads will fail with error 802."
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false,
-      "required": []
-    },
-    "policy": {
-      "type": "object",
-      "description": "Severity for each check. Missing fields fall back to defaults. hard=reject node, warn=pass with warning, report=pass silently with reason recorded.",
-      "properties": {
-        "gpu_count": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "gpu_name": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "memory": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "mig_mode": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "cuda_visible_devices": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "report"
-        },
-        "driver_version": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "warn"
-        },
-        "ecc": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "row_remap": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "retired_pages": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "warn"
-        },
-        "recovery_action": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "fabric": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        },
-        "cuda_smoke": {
-          "type": "string",
-          "enum": [
-            "hard",
-            "warn",
-            "report"
-          ],
-          "default": "hard"
-        }
-      },
-      "additionalProperties": false
-    },
-    "options": {
-      "type": "object",
-      "description": "Runtime options for this probe invocation.",
-      "properties": {
-        "cuda_smoke": {
-          "type": "boolean",
-          "description": "Whether to run the optional CUDA Driver API smoke test. Default false.",
-          "default": false
-        },
-        "include_health": {
-          "type": "boolean",
-          "description": "Whether to collect and report GPU health signals (ECC, row remap, recovery action). Default true.",
-          "default": true
-        },
-        "timeout_ms": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Total probe timeout in milliseconds. Default 10000.",
-          "default": 10000
-        },
-        "cuda_smoke_timeout_ms": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Timeout for the CUDA smoke test in milliseconds. Only read when cuda_smoke is true. Default 5000.",
-          "default": 5000
+          "minLength": 1,
+          "pattern": "^[0-9]+(?:\\.[0-9]+)*$",
+          "description": "Minimum acceptable NVIDIA driver version, such as 550.90.07"
         }
       },
       "additionalProperties": false

@@ -1,17 +1,17 @@
 # gpu-qual
 
-**Status: early development — core types and tests only; the probe itself is not implemented yet.**
+**Status: early development — the identity contract is implemented and tested;
+the real NVML probe is not implemented yet.**
 
-`gpu-qual` is a small, provider-agnostic GPU node qualification probe. It runs
-locally on an NVIDIA GPU node, answers one question — *is the GPU stack
-present, the GPUs I expected, and healthy enough to hand off?* — then emits
-stable JSON and a stable exit code, and exits.
+`gpu-qual` is a small, provider-agnostic GPU node qualification probe. Its first
+slice answers one question: *is the NVIDIA stack available, and are the physical
+GPUs I expected present?* It emits stable JSON and a stable exit code, then exits.
 
 It has two modes:
 
 - **Inventory** (default) — observe and report the local GPU stack. No input needed.
-- **Check** — compare the observed stack against a caller-supplied expected
-  spec ([schemas/contract_schema.json](schemas/contract_schema.json)), including health gates.
+- **Check** — compare observed GPU identity against a caller-supplied expected
+  spec ([schemas/contract_schema.json](schemas/contract_schema.json)).
 
 The binary knows nothing about cloud providers, instance shapes, regions, or
 reservations — callers own all of that.
@@ -21,22 +21,27 @@ reservations — callers own all of that.
 | Exit | Verdict | Meaning |
 |---:|---|---|
 | 0 | `observed` / `pass` | Inventory succeeded, or check passed. |
-| 10 | `warn` | Check passed with warnings. |
-| 20 | `retry` | Transient probe failure or timeout — try again. |
-| 30 | `fail` | Expected-spec mismatch (identity or health). |
-| 40 | `fail` | CUDA usability or fabric readiness failed. |
-| 50 | `fail` | GPU stack absent or inaccessible, invalid input, or probe infrastructure failure. |
+| 10 | `warn` | Reserved for future advisory checks. |
+| 20 | `retry` | Reserved for the supervised timeout/retry path. |
+| 30 | `fail` | Expected identity does not match the observed node. |
+| 40 | `fail` | Reserved for a future GPU-usability probe. |
+| 50 | `fail` | GPU stack absent or inaccessible, or input is invalid. |
 
 Detailed reason codes accompany every non-zero result in the JSON output.
 
 ## Current state
 
-Implemented: C++20 skeleton, CMake + Ninja presets, convenience Makefile,
-placeholder binary, and tests for version, verdict, exit-code, reason-code, and
-result routing.
+Implemented: the identity-only observed model and check contract, strict spec
+parsing, identity reconciliation, stable result JSON and exit-code routing,
+pure inventory/check evaluation, CMake + Ninja builds, and unit tests.
 
-Not yet implemented: spec parser, reconciler, JSON output, fake backend,
-supervisor, NVML backend, CUDA smoke.
+Not yet implemented: dynamic NVML loading and identity collection, supervised
+child execution, production CLI wiring, real-node validation, and capability
+expansion such as MIG or health signals.
+
+Until NVML collection is connected, the binary fails closed with
+`PROBE_OUTPUT_INVALID` and exit code `50`; it does not report a synthetic
+successful inventory.
 
 ## Build
 
