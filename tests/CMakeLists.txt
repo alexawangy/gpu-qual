@@ -19,6 +19,8 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(gpuqual_tests)
 
+gpuqual_configure_warnings(gpuqual_tests)
+
 target_sources(gpuqual_tests
   PRIVATE
     ${GPUQUAL_TEST_SOURCES}
