@@ -1,20 +1,18 @@
 # gpu-qual
 
-**Status: early development — physical GPU identity inventory is implemented
-with a runtime-loaded NVML probe and an explicit simulator.**
+**Status: active development**
 
-`gpu-qual` is a small, provider-agnostic GPU node qualification probe. Its first
-slice answers one question: *is the NVIDIA stack available, and are the physical
-GPUs I expected present?* It emits stable JSON and a stable exit code, then exits.
+`gpu-qual` inventories NVIDIA GPU identity and reports stable JSON and an exit
+code.
 
 It has two modes:
 
-- **Inventory** (default) — observe and report the local GPU stack. No input needed.
-- **Check** — compare observed GPU identity against a caller-supplied expected
+- **Inventory** (default): observe and report the local GPU stack. No input needed.
+- **Check**: compare observed GPU identity against a caller-supplied expected
   spec ([schemas/contract_schema.json](schemas/contract_schema.json)).
 
 The binary knows nothing about cloud providers, instance shapes, regions, or
-reservations — callers own all of that.
+reservations. Callers own those details.
 
 ## Exit codes
 
@@ -31,23 +29,17 @@ Detailed reason codes accompany every non-zero result in the JSON output.
 
 ## Current state
 
-Implemented: runtime NVML loading, physical GPU identity collection, an
-injectable NVML function table, explicit simulation, the identity-only observed
-model and check contract, strict spec parsing, reconciliation, stable result
-JSON and exit-code routing, CMake + Ninja builds, and unit tests.
+Implemented: runtime NVML identity inventory, explicit simulation, spec parsing,
+reconciliation, JSON output, and tests.
 
-Not yet implemented: check-mode CLI input, supervised child execution,
-real-node validation, and capability expansion such as MIG or health signals.
+Next: check-mode CLI input, supervised execution, real-node validation, and
+additional GPU signals.
 
-The binary never links against NVML at build time. It loads
-`libnvidia-ml.so.1` at runtime, so compilation needs neither an NVIDIA GPU nor
-the NVML development headers. A missing library, failed initialization,
-permission error, or required-query failure is reported in JSON and fails
-closed with exit code `50`.
+NVML is loaded at runtime, so builds require neither a GPU nor NVML headers.
 
 ## Build
 
-Install build tools — macOS: `brew install cmake ninja`; Ubuntu:
+Install build tools. macOS: `brew install cmake ninja`; Ubuntu:
 `sudo apt install -y build-essential cmake ninja-build`.
 
 ```sh
