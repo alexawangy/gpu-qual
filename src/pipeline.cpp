@@ -38,6 +38,13 @@ void add_status_reasons(ProbeOutcome& outcome) {
   case NvmlStatus::READY: break;
   }
 
+  // A required NVML query failed, so the collector intentionally returned a
+  // partial observation. Preserve that precise failure instead of deriving
+  // misleading secondary reasons from fields it could not populate.
+  if (contains_reason(outcome.reasons, ReasonCode::PROBE_OUTPUT_INVALID)) {
+    return;
+  }
+
   if (!outcome.observed.nvml.driver_version.has_value() ||
       !is_valid_driver_version(*outcome.observed.nvml.driver_version)) {
     const json observed_driver = outcome.observed.nvml.driver_version.has_value()

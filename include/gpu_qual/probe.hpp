@@ -14,4 +14,11 @@ struct ProbeOutcome {
   std::vector<Reason> reasons;
 };
 
+// Loads libnvidia-ml.so.1 at runtime and collects physical GPU identity.
+ProbeOutcome probe_nvml();
+
+// Explicit local/demo path. The returned values are conspicuously simulated;
+// production callers should use probe_nvml().
+ProbeOutcome probe_simulated_nvml();
+
 } // namespace gpu_qual

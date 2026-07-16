@@ -34,11 +34,15 @@ add_library(gpuqual STATIC
   src/spec.cpp
   src/reconcile.cpp
   src/pipeline.cpp
+  src/nvml_probe.cpp
 )
 
 target_compile_features(gpuqual PUBLIC cxx_std_20)
 
-target_link_libraries(gpuqual PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(gpuqual
+  PUBLIC nlohmann_json::nlohmann_json
+  PRIVATE ${CMAKE_DL_LIBS}
+)
 
 target_include_directories(
   gpuqual
